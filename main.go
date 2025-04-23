@@ -19,12 +19,20 @@ func initConfig() {
 		log.Fatalf("Error getting current directory: %v", err)
 	}
 	fmt.Printf("Current Directory: %s\n", wd)
+	viper.BindEnv("data_dir", "TOOL_DATA_DIR")
+	viper.BindEnv("user", "TOOL_TOOLSDB_USER")
+	viper.BindEnv("password", "TOOL_TOOLSDB_PASSWORD")
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 	viper.AddConfigPath(".")
-	viper.AddConfigPath("/data/project/campwiz-bot")
+	toolDataDir := viper.GetString("data_dir")
+	viper.AddConfigPath(toolDataDir)
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file: %v", err)
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Printf("No config file found, loading config from environment.")
+		} else {
+			log.Fatalf("Error reading config file: %v", err)
+		}
 	}
 }
 func initDB() {
